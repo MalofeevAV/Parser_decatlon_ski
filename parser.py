@@ -18,11 +18,15 @@ PARAMS = ('',
 
 
 def get_html(url, params=''):
+    """Устанавливаем соединиение по указанному URL-адресу с выбранными параметрами поиска. 
+    Вовращаем Response-объект."""
     r = requests.get(url, headers=HEADERS, params=params)
     return r
 
 
 def get_content(html):
+    """Находим все нужные теги. Далее циклом вычленяем нужную информацию и создаем список словарей, 
+    с нужными ключами и значениями."""
     soup = BeautifulSoup(html, 'html.parser')
     items = soup.find_all('li', class_='new-product-thumbnail desktop')
     products = []
@@ -41,6 +45,7 @@ def get_content(html):
 
 
 def save_doc(items, path):
+    """Сохраняем полученную информацию в csv-файл, построчно записывая значения, полученные от функции get_content()"""
     with open(path, 'w', newline='') as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(['Название продукта', 'Цена', 'Изображение продукта', 'Ссылка на продукт'])
@@ -49,15 +54,18 @@ def save_doc(items, path):
 
 
 def parser(params):
+    """Запуск парсера. При успешном соединиении - получаем нужную информацию, в виде списка словарей. 
+    Записываем её в  CSV-файл."""
     html = get_html(URL, params)
     if html.status_code == 200:
-        products_list = [product for product in get_content(html.text)]
+        products_list = get_content(html.text)
         save_doc(products_list, CSV)
     else:
         print('Error')
 
 
 def welcome():
+    """Выбираем нужную категорию поиска. Проверяем на валидность. Запускаем парсер с нужными параметрами."""
     message = """
     Выберите категорию
     все категории - 0
